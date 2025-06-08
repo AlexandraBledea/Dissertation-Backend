@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: redis-consumer
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+redis-channel: experiment-message
+
+server:
+  port: ${APPLICATION_PORT:8040}
+  servlet:
+    context-path: "/redis-consumer"
+
+logging:
+  file:
+    path: /var/log/redis-consumer
+
+benchmark:
+  monitoring-file: ${monitoring.file:results.csv

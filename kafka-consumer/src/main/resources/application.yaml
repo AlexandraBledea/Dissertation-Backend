@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: kafka-consumer
+
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVER:localhost}:${KAFKA_PORT:9092}
+    consumer:
+      group-id: experiment-group
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      max-poll-records: 1000
+      properties:
+        fetch.min.bytes: 65536         # wait for at least 64 KB of data before fetching
+        fetch.max.wait.ms: 100         # wait max 100 ms to get a full batch
+        max.partition.fetch.bytes: 2097152  # per-partition fetch size
+
+    listener:
+      type: batch                      # enables batch consumption
+      ack-mode: manual                 # manually acknowledge once batch is done
+
+kafka-topic: experiment-message
+
+server:
+  port: ${APPLICATION_PORT:8020}
+  servlet:
+    context-path: "/kafka-consumer"
+
+logging:
+  file:
+    path: /var/log/kafka-consumer
+
+benchmark:
+  monitoring-file: ${monitoring.file:results.csv}

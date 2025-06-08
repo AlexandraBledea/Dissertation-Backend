@@ -1,0 +1,11 @@
+# Ignore Redis config file
+redis.conf
+
+# Ignore Redis data folder
+redis-data/
+
+# Ignore logs folder
+logs/
+
+# Ignore RabbitMQ data folder
+rabbit-data/

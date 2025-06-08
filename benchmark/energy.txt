@@ -1,0 +1,31 @@
+08/06/2025 05:07:20.993 - [INFO] - +---------------------------------+
+08/06/2025 05:07:20.994 - [INFO] - | JoularJX Agent Version 3.0.1    |
+08/06/2025 05:07:20.994 - [INFO] - +---------------------------------+
+08/06/2025 05:07:21.015 - [INFO] - Results will be stored in joularjx-result/25040-1749391641012/
+08/06/2025 05:07:21.035 - [INFO] - Initializing for platform: 'windows 10' running on architecture: 'amd64'
+08/06/2025 05:07:21.037 - [INFO] - Please wait while initializing JoularJX...
+08/06/2025 05:07:22.631 - [INFO] - Initialization finished
+08/06/2025 05:07:22.632 - [INFO] - Started monitoring application with ID 25040
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.6)
+
+2025-06-08T17:07:24.032+03:00  INFO 25040 --- [rabbitmq-consumer] [JX Agent Thread] u.d.r.RabbitmqConsumerApplication        : Starting RabbitmqConsumerApplication v0.0.1-SNAPSHOT using Java 21.0.6 with PID 25040 (C:\Users\night\OneDrive\Desktop1\Dissertation\Dissertation-Backend\benchmark\rabbitmq-consumer.jar started by night in C:\Users\night\OneDrive\Desktop1\Dissertation\Dissertation-Backend\benchmark)
+2025-06-08T17:07:24.036+03:00  INFO 25040 --- [rabbitmq-consumer] [JX Agent Thread] u.d.r.RabbitmqConsumerApplication        : No active profile set, falling back to 1 default profile: "default"
+08/06/2025 05:07:26.904 - [INFO] - Thread CPU time negative, taking previous time + 1 : 1 for thread: 36
+2025-06-08T17:07:27.979+03:00  INFO 25040 --- [rabbitmq-consumer] [JX Agent Thread] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8030 (http)
+2025-06-08T17:07:28.010+03:00  INFO 25040 --- [rabbitmq-consumer] [JX Agent Thread] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-06-08T17:07:28.010+03:00  INFO 25040 --- [rabbitmq-consumer] [JX Agent Thread] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]
+2025-06-08T17:07:28.147+03:00  INFO 25040 --- [rabbitmq-consumer] [JX Agent Thread] o.a.c.c.C.[.[.[/rabbitmq-consumer]       : Initializing Spring embedded WebApplicationContext
+2025-06-08T17:07:28.148+03:00  INFO 25040 --- [rabbitmq-consumer] [JX Agent Thread] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 4032 ms
+2025-06-08T17:07:31.225+03:00  INFO 25040 --- [rabbitmq-consumer] [JX Agent Thread] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8030 (http) with context path '/rabbitmq-consumer'
+2025-06-08T17:07:31.231+03:00  INFO 25040 --- [rabbitmq-consumer] [JX Agent Thread] o.s.a.r.c.CachingConnectionFactory       : Attempting to connect to: [localhost:5672]
+2025-06-08T17:07:31.343+03:00  INFO 25040 --- [rabbitmq-consumer] [JX Agent Thread] o.s.a.r.c.CachingConnectionFactory       : Created new connection: rabbitConnectionFactory#740a0d5e:0/SimpleConnection@71c0b742 [delegate=amqp://guest@127.0.0.1:5672/, localPort=53703]
+2025-06-08T17:07:31.464+03:00  INFO 25040 --- [rabbitmq-consumer] [JX Agent Thread] u.d.r.RabbitmqConsumerApplication        : Started RabbitmqConsumerApplication in 8.222 seconds (process running for 10.655)
+08/06/2025 05:07:32.652 - [INFO] - Thread CPU time negative, taking previous time + 1 : 5734375001 for thread: 1

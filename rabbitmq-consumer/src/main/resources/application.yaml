@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: rabbitmq-consumer
+
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+
+rabbit:
+  exchange: notification_exchange
+  routing-key: experiment_notification_key
+  queue-name: experiment_notification_queue
+
+server:
+  port: ${APPLICATION_PORT:8030}
+  servlet:
+    context-path: "/rabbitmq-consumer"
+
+logging:
+  file:
+    path: /var/log/rabbitmq-consumer
+
+benchmark:
+  monitoring-file: ${monitoring.file:results.csv}

@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: producer
+
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVER}:${KAFKA_PORT}
+    consumer:
+      group-id: experiment-group
+    producer:
+      retries: 5
+
+  rabbitmq:
+    host: ${RABBIT_HOST}
+    port: ${RABBIT_PORT}
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
+redis-channel: experiment-message
+
+kafka-topic: experiment-message
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    shutdown:
+      access: unrestricted
+
+rabbit:
+  exchange: notification_exchange
+  routing-key: experiment_notification_key
+  queue-name: experiment_notification_queue
+
+server:
+  port: ${APPLICATION_PORT:8050}
+  servlet:
+    context-path: "/producer"
+
+logging:
+  file:
+    path: /var/log/producer
+  level:
+    org.apache.kafka.clients.producer: OFF
