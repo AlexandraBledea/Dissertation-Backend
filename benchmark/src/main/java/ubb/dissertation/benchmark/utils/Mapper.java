@@ -16,6 +16,10 @@ public class Mapper {
                 e.getStartTime(),
                 e.getEndTime(),
                 e.getEnergy(),
+                e.getAverageCpu(),
+                e.getAverageMemory(),
+                e.getThroughput(),
+                e.getLatency(),
                 e.getStatus()
         );
     }

@@ -35,4 +35,14 @@ public class ExperimentController {
     public ResponseEntity<byte[]> getCsvForExperiment(@PathVariable Long id) {
         return ResponseEntity.ok(experimentService.getCsvContent(id));
     }
+
+    @GetMapping("/filter")
+    public ResponseEntity<List<ExperimentDTO>> filterExperiments(
+            @RequestParam(required = false) String broker,
+            @RequestParam(required = false) Integer count,
+            @RequestParam(required = false) Integer sizeKb
+    ) {
+        List<ExperimentDTO> filtered = experimentService.filterExperiments(broker, count, sizeKb);
+        return ResponseEntity.ok(filtered);
+    }
 }

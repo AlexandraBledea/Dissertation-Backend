@@ -41,6 +41,18 @@ public class ExperimentEntity {
     @Column
     private Double energy;
 
+    @Column(name = "average_cpu")
+    private Double averageCpu;
+
+    @Column(name = "average_memory")
+    private Double averageMemory;
+
+    @Column
+    private Double throughput;
+
+    @Column
+    private Double latency;
+
     @Enumerated(EnumType.STRING)
     private Status status;
 

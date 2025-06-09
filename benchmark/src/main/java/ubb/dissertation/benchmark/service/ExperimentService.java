@@ -1,5 +1,6 @@
 package ubb.dissertation.benchmark.service;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -10,10 +11,13 @@ import ubb.dissertation.benchmark.entity.Status;
 import ubb.dissertation.benchmark.repository.ExperimentRepository;
 import ubb.dissertation.benchmark.utils.Mapper;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -45,6 +49,7 @@ public class ExperimentService {
         e.setStatus(exitCode == 0 ? Status.COMPLETED : Status.FAILED);
         e.setCsvContent(readSafe(csvPath));
         e.setEnergy(parseEnergy(logFile));
+        parseAndSetCsvMetrics(Path.of(csvPath), e);
         ExperimentEntity saved = experimentRepository.save(e);
         sendNotification(saved);
     }
@@ -55,6 +60,55 @@ public class ExperimentService {
         ExperimentEntity saved = experimentRepository.save(e);
         sendNotification(saved);
     }
+
+    public void parseAndSetCsvMetrics(Path csvPath, ExperimentEntity experiment) {
+        try (BufferedReader reader = Files.newBufferedReader(csvPath)) {
+            String line = reader.readLine(); // Skip header
+            if (line == null) return;
+
+            Instant start = null, end = null;
+            double sumCpu = 0, sumMem = 0;
+            int count = 0;
+            double lastLatency = 0;
+
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length < 5) continue;
+
+                double throughput = Double.parseDouble(parts[4]);
+                if (throughput == 0.0) continue;  // Skip rows with 0 throughput
+
+                Instant timestamp = Instant.parse(parts[0]);
+                double cpu = Double.parseDouble(parts[1]);
+                double mem = Double.parseDouble(parts[2]);
+                double latency = Double.parseDouble(parts[3]);
+
+                if (start == null) start = timestamp;
+                end = timestamp;
+
+                sumCpu += cpu;
+                sumMem += mem;
+                lastLatency = latency;
+                count++;
+            }
+
+            if (count == 0 || start == null || end == null) return;
+
+            double avgCpu = sumCpu / count;
+            double avgMem = sumMem / count;
+            double durationSec = Math.max(Duration.between(start, end).toMillis() / 1000.0, 1);
+            double throughput = experiment.getNumberOfMessages() / durationSec;
+
+            experiment.setAverageCpu(avgCpu);
+            experiment.setAverageMemory(avgMem);
+            experiment.setLatency(lastLatency);
+            experiment.setThroughput(throughput);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private byte[] readSafe(String path) {
         try {
@@ -110,5 +164,30 @@ public class ExperimentService {
     private void sendNotification(ExperimentEntity e) {
         ExperimentDTO dto = mapper.experimentEntityToExperimentDto(e);
         messagingTemplate.convertAndSend("/topic/experiment-update", dto);
+    }
+
+    public List<ExperimentDTO> filterExperiments(String broker, Integer numberOfMessages, Integer messageSizeInKB) {
+        Specification<ExperimentEntity> spec = Specification.where(
+                (root, query, cb) -> cb.equal(root.get("status"), Status.COMPLETED)
+        );
+
+        if (broker != null && !broker.isBlank()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(cb.lower(root.get("broker")), broker.toLowerCase()));
+        }
+
+        if (numberOfMessages != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("numberOfMessages"), numberOfMessages));
+        }
+
+        if (messageSizeInKB != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("messageSizeInKB"), messageSizeInKB));
+        }
+
+        return experimentRepository.findAll(spec).stream()
+                .map(mapper::experimentEntityToExperimentDto)
+                .toList();
     }
 }
