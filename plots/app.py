@@ -1,5 +1,9 @@
+import base64
+
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import StreamingResponse
+from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import JSONResponse
 
 from benchmark_client import fetch_experiment_csv, fetch_filtered_experiments_with_csv
 from contants import METRIC_MAP, TREND_METRIC_MAP
@@ -9,6 +13,14 @@ from services import (generate_plot_for_one_experiment_over_time, generate_weigh
 import logging
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+    allow_credentials=False
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -35,7 +47,11 @@ def get_latency_vs_size_plot(broker: str, message_count: int = Query(None)):
         raise HTTPException(status_code=404, detail="No matching experiments found")
 
     plot = generate_weighted_latency_vs_size_plot(experiments)
-    return StreamingResponse(plot, media_type="image/png")
+    plot.seek(0)
+    encoded = base64.b64encode(plot.read()).decode("utf-8")
+    data_url = f"data:image/png;base64,{encoded}"
+    return JSONResponse(content={"image": data_url})
+
 
 
 @app.get("/plot/trend/energy-per-message-vs-size")
@@ -49,7 +65,11 @@ def get_latency_vs_size_plot(broker: str, message_count: int = Query(None)):
         raise HTTPException(status_code=404, detail="No matching experiments found")
 
     plot = generate_energy_per_message_vs_size_plot(experiments)
-    return StreamingResponse(plot, media_type="image/png")
+
+    plot.seek(0)
+    encoded = base64.b64encode(plot.read()).decode("utf-8")
+    data_url = f"data:image/png;base64,{encoded}"
+    return JSONResponse(content={"image": data_url})
 
 
 @app.get("/plot/trend/metric-vs-size")
@@ -79,7 +99,10 @@ def get_trend_plot(
         title=config["title"]
     )
 
-    return StreamingResponse(plot, media_type="image/png")
+    plot.seek(0)
+    encoded = base64.b64encode(plot.read()).decode("utf-8")
+    data_url = f"data:image/png;base64,{encoded}"
+    return JSONResponse(content={"image": data_url})
 
 
 @app.get("/plot/comparison-bar")
@@ -112,4 +135,7 @@ def get_comparison_bar_plot(
         message_size_kb=message_size,
         message_count=message_count
     )
-    return StreamingResponse(plot, media_type="image/png")
+    plot.seek(0)
+    encoded = base64.b64encode(plot.read()).decode("utf-8")
+    data_url = f"data:image/png;base64,{encoded}"
+    return JSONResponse(content={"image": data_url})

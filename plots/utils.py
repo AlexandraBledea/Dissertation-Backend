@@ -1,6 +1,8 @@
 import io
-from matplotlib import pyplot as plt
 
+import matplotlib
+from matplotlib import pyplot as plt
+matplotlib.use("Agg")
 
 def plot_not_enough_data_message() -> plt.Figure:
     fig, ax = plt.subplots(figsize=(8, 4))
@@ -8,7 +10,9 @@ def plot_not_enough_data_message() -> plt.Figure:
             horizontalalignment='center',
             verticalalignment='center',
             fontsize=14, color='gray')
-    plt.axis("off")
+    ax.set_axis_off()
+    fig.tight_layout(pad=0)
+    fig.canvas.draw()
     return fig
 
 def plot_metric(ax, x, y, title, color, marker, ylabel, offset=0):
@@ -30,7 +34,8 @@ def plot_metric(ax, x, y, title, color, marker, ylabel, offset=0):
 
 def save_plot_to_bytesio(fig: plt.Figure) -> io.BytesIO:
     buf = io.BytesIO()
-    fig.savefig(buf, format="png")
+    fig.canvas.draw()
+    fig.savefig(buf, format="png", dpi=100)
     plt.close(fig)
     buf.seek(0)
     return buf
