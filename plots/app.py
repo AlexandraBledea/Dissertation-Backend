@@ -109,7 +109,7 @@ def get_trend_plot(
 def get_comparison_bar_plot(
     metric: str = Query(..., description="Metric to plot (latency, throughput, cpu, memory, energy)"),
     message_size: int = Query(..., description="Message size in KB"),
-    message_count: int = Query(None, description="Number of messages (optional)")
+    message_count: int = Query(..., description="Number of messages (optional)")
 ):
 
     if metric not in METRIC_MAP:

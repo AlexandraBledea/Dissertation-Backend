@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import io
 
-from colorama.ansi import set_title
 
 from contants import EXPECTED_BROKERS, BROKER_COLORS
 from utils import save_plot_to_bytesio, plot_not_enough_data_message, annotate_points, plot_metric
@@ -167,7 +166,13 @@ def generate_bar_plot_across_brokers(experiments, metric_name, message_size_kb=N
     colors = [BROKER_COLORS[b] for b in brokers]
 
     # Step 4: Build title string
-    title_parts = [f"{metric_name.capitalize()} Comparison"]
+    if metric_name == "averageCpu":
+        title_parts = [f"Average CPU Comparison"]
+    elif metric_name == "averageMemory":
+        title_parts = [f"Average Memory Comparison"]
+    else:
+        title_parts = [f"{metric_name.capitalize()} Comparison"]
+
     if message_size_kb is not None:
         title_parts.append(f"{message_size_kb}KB")
     if message_count is not None:
