@@ -29,6 +29,6 @@ public class BenchmarkController {
         }
 
         benchmarkService.runConsumerTest(type, count, sizeKb);
-        return ResponseEntity.accepted().body("Benchmark started for " + type);
+        return ResponseEntity.ok().body("Benchmark started for " + type);
     }
 }

@@ -1,11 +1,16 @@
 package ubb.dissertation.benchmark.service;
 
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import ubb.dissertation.benchmark.dto.ExperimentDTO;
+import ubb.dissertation.benchmark.dto.Experiment;
+import ubb.dissertation.benchmark.dto.ExperimentPaginationResponse;
 import ubb.dissertation.benchmark.entity.ExperimentEntity;
 import ubb.dissertation.benchmark.entity.Status;
 import ubb.dissertation.benchmark.repository.ExperimentRepository;
@@ -21,17 +26,17 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.springframework.data.domain.ExampleMatcher.StringMatcher.CONTAINING;
+
 @Service
 public class ExperimentService {
 
     private final ExperimentRepository experimentRepository;
     private final SimpMessagingTemplate messagingTemplate;
-    private final Mapper mapper;
 
-    public ExperimentService(ExperimentRepository experimentRepository, SimpMessagingTemplate messagingTemplate, Mapper mapper) {
+    public ExperimentService(ExperimentRepository experimentRepository, SimpMessagingTemplate messagingTemplate) {
         this.experimentRepository = experimentRepository;
         this.messagingTemplate = messagingTemplate;
-        this.mapper = mapper;
     }
 
     public ExperimentEntity createRunningExperiment(String broker, int messages, int sizeKB) {
@@ -41,7 +46,9 @@ public class ExperimentService {
         e.setMessageSizeInKB(sizeKB);
         e.setStartTime(LocalDateTime.now());
         e.setStatus(Status.RUNNING);
-        return experimentRepository.save(e);
+        ExperimentEntity saved = experimentRepository.save(e);
+        sendNotification(saved);
+        return saved;
     }
 
     public void finalizeExperiment(ExperimentEntity e, File logFile, String csvPath, int exitCode) {
@@ -139,15 +146,27 @@ public class ExperimentService {
         }
     }
 
-    public List<ExperimentDTO> findAll() {
+    public ExperimentPaginationResponse getAllExperiments(int pageNumber, int pageSize, String broker, Integer numberOfMessages, Integer messageSize) {
+
+        var pageRequest = PageRequest.of(pageNumber, pageSize);
+        var experiment = new ExperimentEntity();
+        experiment.setBroker(broker);
+        experiment.setNumberOfMessages(numberOfMessages);
+        experiment.setMessageSizeInKB(messageSize);
+        var example = Example.of(experiment, ExampleMatcher.matching().withIgnoreCase());
+        var entities = experimentRepository.findAll(example, pageRequest);
+        return Mapper.convertToExperimentPaginationResponse(entities);
+    }
+
+    public List<Experiment> findAll() {
         return experimentRepository.findAll().stream()
-                .map(mapper::experimentEntityToExperimentDto)
+                .map(Mapper::convertToExperiment)
                 .toList();
     }
 
-    public ExperimentDTO findById(Long id) {
+    public Experiment findById(Long id) {
         return experimentRepository.findById(id)
-                .map(mapper::experimentEntityToExperimentDto)
+                .map(Mapper::convertToExperiment)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Experiment not found"));
     }
 
@@ -162,11 +181,11 @@ public class ExperimentService {
     }
 
     private void sendNotification(ExperimentEntity e) {
-        ExperimentDTO dto = mapper.experimentEntityToExperimentDto(e);
+        Experiment dto = Mapper.convertToExperiment(e);
         messagingTemplate.convertAndSend("/topic/experiment-update", dto);
     }
 
-    public List<ExperimentDTO> filterExperiments(String broker, Integer numberOfMessages, Integer messageSizeInKB) {
+    public List<Experiment> filterExperiments(String broker, Integer numberOfMessages, Integer messageSizeInKB) {
         Specification<ExperimentEntity> spec = Specification.where(
                 (root, query, cb) -> cb.equal(root.get("status"), Status.COMPLETED)
         );
@@ -187,7 +206,7 @@ public class ExperimentService {
         }
 
         return experimentRepository.findAll(spec).stream()
-                .map(mapper::experimentEntityToExperimentDto)
+                .map(Mapper::convertToExperiment)
                 .toList();
     }
 }

@@ -27,10 +27,10 @@ public class ExperimentEntity {
     private String broker;
 
     @Column(name = "number_of_messages")
-    private int numberOfMessages;
+    private Integer numberOfMessages;
 
     @Column(name = "message_size_in_kb")
-    private int messageSizeInKB;
+    private Integer messageSizeInKB;
 
     @Column(name = "start_time")
     private LocalDateTime startTime;

@@ -1,14 +1,22 @@
 package ubb.dissertation.benchmark.utils;
 
-import org.springframework.stereotype.Component;
-import ubb.dissertation.benchmark.dto.ExperimentDTO;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Page;
+import ubb.dissertation.benchmark.dto.Experiment;
+import ubb.dissertation.benchmark.dto.ExperimentPaginationResponse;
+import ubb.dissertation.benchmark.dto.Pagination;
 import ubb.dissertation.benchmark.entity.ExperimentEntity;
 
-@Component
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Mapper {
 
-    public ExperimentDTO experimentEntityToExperimentDto(ExperimentEntity e) {
-        return new ExperimentDTO(
+    public static Experiment convertToExperiment(ExperimentEntity e) {
+        return new Experiment(
                 e.getId(),
                 e.getBroker(),
                 e.getNumberOfMessages(),
@@ -22,5 +30,20 @@ public class Mapper {
                 e.getLatency(),
                 e.getStatus()
         );
+    }
+
+    public static ExperimentPaginationResponse convertToExperimentPaginationResponse(Page<ExperimentEntity> experiments) {
+        ExperimentPaginationResponse experimentPaginationResponse = new ExperimentPaginationResponse();
+        Pagination pagination = new Pagination();
+        pagination.setPageNumber(experiments.getPageable().getPageNumber());
+        pagination.setPageSize(experiments.getPageable().getPageSize());
+        pagination.setTotalNumberOfPages(experiments.getTotalPages());
+        pagination.setTotalNumberOfItems(experiments.getNumberOfElements());
+        List<Experiment> experimentList = experiments.stream()
+                .map(Mapper::convertToExperiment)
+                .collect(toList());
+        experimentPaginationResponse.setExperiments(experimentList);
+        experimentPaginationResponse.setPagination(pagination);
+        return experimentPaginationResponse;
     }
 }
