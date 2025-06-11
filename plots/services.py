@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import io
 
+from colorama.ansi import set_title
+
 from contants import EXPECTED_BROKERS, BROKER_COLORS
 from utils import save_plot_to_bytesio, plot_not_enough_data_message, annotate_points, plot_metric
 
@@ -145,7 +147,6 @@ def generate_energy_per_message_vs_size_plot(experiments):
     return save_plot_to_bytesio(fig)
 
 
-
 def generate_bar_plot_across_brokers(experiments, metric_name, message_size_kb=None, message_count=None):
     grouped = defaultdict(list)
 
@@ -165,17 +166,18 @@ def generate_bar_plot_across_brokers(experiments, metric_name, message_size_kb=N
     avg_values = [sum(grouped[b]) / len(grouped[b]) for b in brokers]
     colors = [BROKER_COLORS[b] for b in brokers]
 
-    # Step 4: Prepare title
+    # Step 4: Build title string
     title_parts = [f"{metric_name.capitalize()} Comparison"]
     if message_size_kb is not None:
         title_parts.append(f"{message_size_kb}KB")
     if message_count is not None:
         title_parts.append(f"{message_count} messages")
+    full_title = " - ".join(title_parts)
 
     # Step 5: Plot
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.bar(brokers, avg_values, color=colors)
-    ax.set_title(" - ".join(title_parts))
+    ax.set_title(full_title)
     ax.set_xlabel("Broker")
     ax.set_ylabel({
         "latency": "Latency (ms)",
@@ -185,27 +187,98 @@ def generate_bar_plot_across_brokers(experiments, metric_name, message_size_kb=N
         "energy": "Energy (J)"
     }.get(metric_name, metric_name))
 
-    # Step 6: Extend y-axis limit for safe label placement
+    # Step 6: Handle axis scaling
+    y_min = min(avg_values)
     y_max = max(avg_values)
-    ax.set_ylim(0, y_max * 1.15)  # add 15% headroom
+    if metric_name == "latency":
+        ax.set_yscale("log")
+        ax.set_ylim(y_min * 0.8, y_max * 10)
+    else:
+        ax.set_ylim(0, y_max * 1.15)
 
-    # Annotate values above bars with better offset
+    # Step 7: Annotate bars
     for i, broker in enumerate(brokers):
         avg = avg_values[i]
         count = len(grouped[broker])
+        offset = avg * 1.3 if metric_name == "latency" else avg + y_max * 0.03
         ax.text(
             i,
-            avg + y_max * 0.03,
+            offset,
             f"{avg:.2f}\n{count} experiment(s)",
             ha='center',
             va='bottom',
             fontsize=9
         )
 
-    if metric_name == "latency":
-        ax.set_yscale("log")
+    # Step 9: Layout
     ax.grid(False)
-    plt.subplots_adjust(top=0.88)
     plt.tight_layout()
 
     return save_plot_to_bytesio(fig)
+
+
+# def generate_bar_plot_across_brokers(experiments, metric_name, message_size_kb=None, message_count=None):
+#     grouped = defaultdict(list)
+#
+#     # Step 1: Group values per broker
+#     for exp in experiments:
+#         broker = exp["broker"]
+#         value = exp[metric_name]
+#         if broker and value is not None:
+#             grouped[broker].append(value)
+#
+#     # Step 2: Ensure all brokers are present
+#     if not all(broker in grouped and grouped[broker] for broker in EXPECTED_BROKERS):
+#         return save_plot_to_bytesio(plot_not_enough_data_message())
+#
+#     # Step 3: Compute averages
+#     brokers = EXPECTED_BROKERS
+#     avg_values = [sum(grouped[b]) / len(grouped[b]) for b in brokers]
+#     colors = [BROKER_COLORS[b] for b in brokers]
+#
+#     # Step 4: Prepare title
+#     title_parts = [f"{metric_name.capitalize()} Comparison"]
+#     if message_size_kb is not None:
+#         title_parts.append(f"{message_size_kb}KB")
+#     if message_count is not None:
+#         title_parts.append(f"{message_count} messages")
+#
+#     # Step 5: Plot
+#     fig, ax = plt.subplots(figsize=(8, 5))
+#     ax.bar(brokers, avg_values, color=colors)
+#     ax.set_title(" - ".join(title_parts))
+#     ax.set_xlabel("Broker")
+#     ax.set_ylabel({
+#         "latency": "Latency (ms)",
+#         "throughput": "Throughput (msg/s)",
+#         "averageCpu": "CPU Usage (%)",
+#         "averageMemory": "Memory Usage (MB)",
+#         "energy": "Energy (J)"
+#     }.get(metric_name, metric_name))
+#
+#     # Step 6: Extend y-axis limit for safe label placement
+#     y_max = max(avg_values)
+#     ax.set_ylim(0, y_max * 1.15)  # add 15% headroom
+#
+#     # Annotate values above bars with better offset
+#     for i, broker in enumerate(brokers):
+#         avg = avg_values[i]
+#         count = len(grouped[broker])
+#         ax.text(
+#             i,
+#             avg + y_max * 0.03,
+#             f"{avg:.2f}\n{count} experiment(s)",
+#             ha='center',
+#             va='bottom',
+#             fontsize=9
+#         )
+#
+#     if metric_name == "latency":
+#         ax.set_yscale("log")
+#         ax.set_ylim(min(y for y in avg_values if y > 0) * 0.8, max(avg_values) * 10)
+#
+#     ax.grid(False)
+#     plt.subplots_adjust(top=0.88)
+#     plt.tight_layout()
+#
+#     return save_plot_to_bytesio(fig)
