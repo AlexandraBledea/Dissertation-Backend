@@ -68,6 +68,13 @@ public class ExperimentService {
         sendNotification(saved);
     }
 
+    public void deleteExperiment(Long id) {
+        if (!experimentRepository.existsById(id)) {
+            throw new RuntimeException("Experiment not found with id: " + id);
+        }
+        experimentRepository.deleteById(id);
+    }
+
     public void parseAndSetCsvMetrics(Path csvPath, ExperimentEntity experiment) {
         try (BufferedReader reader = Files.newBufferedReader(csvPath)) {
             String line = reader.readLine(); // Skip header

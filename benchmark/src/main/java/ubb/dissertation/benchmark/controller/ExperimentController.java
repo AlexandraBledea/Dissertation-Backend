@@ -37,6 +37,12 @@ public class ExperimentController {
         return ResponseEntity.ok(experiments);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteExperiment(@PathVariable Long id) {
+        experimentService.deleteExperiment(id);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Experiment> getExperimentById(@PathVariable Long id) {
         Experiment experiment = experimentService.findById(id);
