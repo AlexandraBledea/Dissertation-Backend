@@ -51,7 +51,7 @@ public class RedisConfig {
 
     @Bean
     public MessageListenerAdapter listenerAdapter(RedisMessageConsumer consumer) {
-        MessageListenerAdapter adapter = new MessageListenerAdapter(consumer, "onMessage");
+        MessageListenerAdapter adapter = new MessageListenerAdapter(consumer, "handleMessage");
         adapter.setSerializer(new Jackson2JsonRedisSerializer<>(Message.class));
         return adapter;
     }

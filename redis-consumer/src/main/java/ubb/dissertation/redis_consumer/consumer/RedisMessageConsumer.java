@@ -1,5 +1,6 @@
 package ubb.dissertation.redis_consumer.consumer;
 
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,13 +27,33 @@ public class RedisMessageConsumer {
     private final AtomicInteger expectedTotal = new AtomicInteger(-1);
     private final AtomicBoolean shutdownInitiated = new AtomicBoolean(false);
 
+    private volatile long lastMessageTime = System.currentTimeMillis();
 
     public RedisMessageConsumer(@Value("${benchmark.monitoring-file}") String monitoringFile) throws IOException {
         this.oshiLogger = new OshiLogger(monitoringFile);
         scheduler.scheduleAtFixedRate(oshiLogger::log, 0, 1, TimeUnit.SECONDS);
     }
 
-    public void onMessage(Message message) {
+
+    @PostConstruct
+    public void init() {
+        // Fallback shutdown after 10s of no messages if expectedTotal was set
+        scheduler.scheduleAtFixedRate(() -> {
+            long now = System.currentTimeMillis();
+            int expected = expectedTotal.get();
+            int received = receivedCount.get();
+
+            if (expected > 0 && received < expected
+                    && now - lastMessageTime > 10000
+                    && shutdownInitiated.compareAndSet(false, true)) {
+
+                log.warn("Timeout: expected {}, received {}. Forcing shutdown.", expected, received);
+                shutdown();
+            }
+        }, 10, 10, TimeUnit.SECONDS);
+    }
+
+    public void handleMessage(Message message) {
         long now = System.currentTimeMillis();
         long latency = now - message.getTimestamp();
         oshiLogger.recordMessage(latency);
