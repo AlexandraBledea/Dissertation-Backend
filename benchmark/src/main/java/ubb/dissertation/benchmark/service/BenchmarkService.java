@@ -46,6 +46,8 @@ public class BenchmarkService {
             return;
         }
 
+        log.info("Experiment started");
+
         ExperimentEntity experiment = experimentService.createRunningExperiment(broker, numberOfMessages, messageSizeKB);
         File logFile = new File(energyFile);
         try {
@@ -53,10 +55,14 @@ public class BenchmarkService {
             producerService.waitForStartup(consumer, broker);
             producerService.triggerProducer(broker, numberOfMessages, messageSizeKB);
 
+            log.info("Waiting for consumer process to exit...");
             int exitCode = consumer.waitFor();
+            log.info("Consumer process exited with code: {}", exitCode);
+
             experimentService.finalizeExperiment(experiment, logFile, monitoringFile, exitCode);
 
         } catch (Exception e) {
+            log.info("Experiment failed: {}", e.getMessage());
             experimentService.failExperiment(experiment);
         } finally {
             experimentRunning.set(false);

@@ -1,5 +1,6 @@
 package ubb.dissertation.benchmark.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ import java.util.List;
 
 import static org.springframework.data.domain.ExampleMatcher.StringMatcher.CONTAINING;
 
+@Slf4j
 @Service
 public class ExperimentService {
 
@@ -52,6 +54,7 @@ public class ExperimentService {
     }
 
     public void finalizeExperiment(ExperimentEntity e, File logFile, String csvPath, int exitCode) {
+        log.info("Experiment finalized with exit code: {}", exitCode);
         e.setEndTime(LocalDateTime.now());
         e.setStatus(exitCode == 0 ? Status.COMPLETED : Status.FAILED);
         e.setCsvContent(readSafe(csvPath));

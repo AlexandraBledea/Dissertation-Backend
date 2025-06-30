@@ -2,9 +2,8 @@ package ubb.dissertation.benchmark.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
-import ubb.dissertation.benchmark.config.ClientConfiguration;
 
-@FeignClient(name = "redis", url = "${client.redis.url}", configuration = ClientConfiguration.class)
+@FeignClient(name = "redis", url = "${client.redis.url}")
 public interface RedisClient {
 
     @GetMapping("/status")
