@@ -2,6 +2,7 @@ package ubb.dissertation.producer.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import ubb.dissertation.common.Message;
 import ubb.dissertation.producer.client.MessageBrokerClient;
@@ -11,6 +12,7 @@ import ubb.dissertation.producer.client.MessageBrokerClient;
 public class ProducerService {
     private static final Logger log = LoggerFactory.getLogger(ProducerService.class);
 
+    @Async
     public void sendBatch(int count, int sizeKB, MessageBrokerClient client) {
         long start = System.currentTimeMillis();
 

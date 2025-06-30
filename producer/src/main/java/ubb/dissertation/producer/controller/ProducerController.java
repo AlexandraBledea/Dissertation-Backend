@@ -39,6 +39,6 @@ public class ProducerController {
         };
 
         producerService.sendBatch(count, sizeKB, broker);
-        return ResponseEntity.ok("Sent " + count + " messages to " + type);
+        return ResponseEntity.accepted().body("Producer triggered asynchronously");
     }
 }
